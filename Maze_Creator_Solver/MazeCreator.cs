@@ -164,6 +164,8 @@ namespace Maze_Creator_Solver
 
         public void PrintMaze()
         {
+            this.Maze[this.StartX, this.StartY] = 4;
+            this.Maze[this.EndX, this.EndY] = 4;
             for (int i = 0; i < this.Width; i++)
             {
                 for (int j = 0; j < this.Height; j++)
@@ -176,6 +178,12 @@ namespace Maze_Creator_Solver
                     else if (val == 3)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write("\u2588\u2588");
+                        Console.ResetColor();
+                    }
+                    else if (val == 4)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.Write("\u2588\u2588");
                         Console.ResetColor();
                     }
