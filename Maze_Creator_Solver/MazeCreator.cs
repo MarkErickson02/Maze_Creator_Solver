@@ -20,18 +20,21 @@ namespace Maze_Creator_Solver
             this.Maze = new int[this.Width, this.Height];
         }
 
-        /*
-         * Currently selectes any random array index as start of finish
-         * Can be updated to select only indices at border
-         */
-        public void CreateEndPoints()
+        public MazeCreator(int Width, int Height)
+        {
+            this.Width = Width;
+            this.Height = Height;
+            this.Maze = new int[this.Width, this.Height];
+        }
+
+        public void SetRandomEndPoints()
         {
             Random rng = new Random();
             int xstart = rng.Next(this.Width);
             int ystart = rng.Next(this.Height);
             int xend = rng.Next(this.Width);
             int yend = rng.Next(this.Height);
-            while (this.Maze[xstart, ystart] != 1 && this.Maze[xend, yend] != 1 && (xstart == xend && ystart == yend))
+            while (this.Maze[xstart, ystart] != 1 && this.Maze[xend, yend] != 1 && (xstart != xend && ystart != yend))
             {
                 xstart = rng.Next(this.Width);
                 ystart = rng.Next(this.Height);
@@ -43,6 +46,40 @@ namespace Maze_Creator_Solver
             this.EndX = xend;
             this.EndY = yend;
             Console.WriteLine("Start Maze: " + this.StartX + ", " + this.StartY + " End Point: " + this.EndX + " , " + this.EndY);
+        }
+
+        public void SetEndPointOnEdge()
+        {
+            List<Tuple<int, int>> validEndpoints = new List<Tuple<int,int>>();
+            for (int i = 0 ; i < this.Width; i++)
+            {
+                if (this.Maze[i, 0] != 1)
+                {
+                    validEndpoints.Add(new Tuple<int, int>(i, 0));
+                }
+                if (this.Maze[i, this.Height - 1] != 1)
+                {
+                    validEndpoints.Add(new Tuple<int, int>(i, this.Height - 1));
+                }
+            }
+            for (int j = 1; j < this.Height - 1; j++)
+            {
+                if (this.Maze[0, j] != 1)
+                {
+                    validEndpoints.Add(new Tuple<int, int>(0, j));
+                }
+                if (this.Maze[this.Width - 1, j] != 1)
+                {
+                    validEndpoints.Add(new Tuple<int, int>(this.Width - 1, j));
+                }
+            }
+            Random rng = new Random();
+            Tuple<int, int> start = validEndpoints[rng.Next(validEndpoints.Count)];
+            Tuple<int, int> end = validEndpoints[rng.Next(validEndpoints.Count)];
+            this.StartX = start.Item1;
+            this.StartY = start.Item2;
+            this.EndX = end.Item1;
+            this.EndY = end.Item2;
         }
 
         public void CreateMaze()
@@ -82,86 +119,6 @@ namespace Maze_Creator_Solver
             }
         }
 
-        public bool SolveMaze()
-        {
-            bool[,] visited = new bool[this.Width, this.Height];
-            bool[,] correctPath = new bool[this.Width, this.Height];
-            bool solveable = RecursiveSolve(visited, correctPath, this.StartX, this.StartY);
-            if (solveable)
-            {
-                for (int i=0; i<this.Width; i++)
-                {
-                    for (int j=0; j<this.Height; j++)
-                    {
-                        if (correctPath[i, j] == true)
-                        {
-                            this.Maze[i, j] = 3;
-                        }
-                    }
-                }
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        private bool RecursiveSolve(bool[,] visited, bool[,] correctPath, int x, int y)
-        {
-            try
-            {
-                if (x == this.EndX && y == this.EndY)
-                {
-                    return true;
-                }
-                if (this.Maze[x, y] == 0 || visited[x, y] == true)
-                {
-                    return false;
-                }
-                visited[x, y] = true;
-                if (x > 0)
-                {
-                    if (RecursiveSolve(visited, correctPath, x - 1, y))
-                    {
-                        correctPath[x, y] = true;
-                        return true;
-                    }
-                }
-                if (x < this.Width - 1)
-                {
-                    if (RecursiveSolve(visited, correctPath, x + 1, y))
-                    {
-                        correctPath[x, y] = true;
-                        return true;
-
-                    }
-                }
-                if (y > 0)
-                {
-                    if (RecursiveSolve(visited, correctPath, x, y - 1))
-                    {
-                        correctPath[x, y] = true;
-                        return true;
-                    }
-                }
-                if (y < this.Height - 1)
-                {
-                    if (RecursiveSolve(visited, correctPath, x, y + 1))
-                    {
-                        correctPath[x, y] = true;
-                        return true;
-                    }
-                }
-            }
-            catch (IndexOutOfRangeException e)
-            {
-                Console.WriteLine(e.Message);
-                Console.WriteLine("Error at x=" + x + " y=" + y);
-            }
-            return false;
-        }
-
         public void PrintMaze()
         {
             this.Maze[this.StartX, this.StartY] = 4;
@@ -190,23 +147,6 @@ namespace Maze_Creator_Solver
                     else { Console.Write("  "); }
                 }
                 Console.WriteLine("");
-            }
-        }
-
-        public static void Main()
-        {
-            MazeCreator maze = new MazeCreator();
-            maze.CreateMaze();
-            maze.CreateEndPoints();
-            maze.PrintMaze();
-            bool solveable = maze.SolveMaze();
-            if (solveable)
-            {
-                maze.PrintMaze();
-            }
-            else
-            {
-                Console.WriteLine("Maze not solveable");
             }
         }
     }
